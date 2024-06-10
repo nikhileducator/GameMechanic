@@ -7,7 +7,16 @@ public class PlayerController : MonoBehaviour
     public float speed = 5.0f;
     public int coinsCollected = 0;
 
+    public float jumpForce = 5f;  // Adjustable jump force
+    private Rigidbody rb;  // Reference to the Rigidbody component
+    private bool isGrounded;  // To check if the player is on the ground
+
     public AudioClip coinCollectSound;
+
+    void Start()
+    {
+        rb = GetComponent<Rigidbody>();
+    }
 
     // Update is called once per frame
     void Update()
@@ -21,39 +30,36 @@ public class PlayerController : MonoBehaviour
             Vector3 movement = new Vector3(moveHorizontal, 0.0f, 0.0f);
             transform.Translate(movement * speed * Time.deltaTime);
         }
+
+        // Check if the space bar is pressed and the player is on the ground
+        if (Input.GetKeyDown(KeyCode.Space) && isGrounded)
+        {
+            // Apply a force upwards
+            rb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
+        }
     }
 
     // This function is called when the collider/rigidbody attached to this script
     // first touches another collider/rigidbody.
-    private void OnCollisionEnter(Collision collision)
+    private void OnCollisionEnter(Collision col)
     {
-        // Output the name of the object that collided with this one
-        Debug.Log("Collision detected with " + collision.gameObject.name);
-        
-        // You can add more logic here to handle the collision as needed
+        if (col.gameObject.tag == "Ground")
+        {
+            isGrounded = true;
+        }
     }
 
-    // This function is called every frame while the collider/rigidbody is touching
-    // another collider/rigidbody.
-    private void OnCollisionStay(Collision collision)
-    {
-        // You can implement repeated behavior while in contact if needed
-    }
-
-    // This function is called when the collider/rigidbody attached stops touching another
-    // collider/rigidbody.
     private void OnCollisionExit(Collision collision)
     {
-        // Handle logic for when the collision ends
-        Debug.Log("Stopped colliding with " + collision.gameObject.name);
+        if (collision.gameObject.CompareTag("Ground"))
+        {
+            isGrounded = false;
+        }
     }
 
     // This function is called when the Collider other enters the trigger.
     private void OnTriggerEnter(Collider other)
     {
-        // Output the name of the object that entered the trigger
-        Debug.Log("Trigger entered by " + other.gameObject.name);
-
         if(other.gameObject.tag == "coin")
         {
             coinsCollected++;
@@ -62,23 +68,18 @@ public class PlayerController : MonoBehaviour
             
             AudioSource.PlayClipAtPoint(coinCollectSound, transform.position);
 
-            Destroy(other.gameObject);
+            //Destroy(other.gameObject);
+            other.gameObject.SetActive(false);
         }
-
-        // Add additional logic to handle entering the trigger
     }
 
-    // This function is called once per frame for every Collider other
-    // that is touching the trigger.
     private void OnTriggerStay(Collider other)
     {
-        // You can implement continued behavior while the object stays in the trigger
+
     }
 
-    // This function is called when the Collider other has stopped touching the trigger.
     private void OnTriggerExit(Collider other)
     {
-        // Handle logic for when an object exits the trigger
-        Debug.Log("Trigger exited by " + other.gameObject.name);
+
     }
 }
